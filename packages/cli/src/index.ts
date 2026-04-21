@@ -196,11 +196,59 @@ program
 
 // Meta
 program
+  .command('version')
+  .description('Show installed + latest available')
+  .action(async () => {
+    const { versionCommand } = await import('./commands/version');
+    await versionCommand();
+  });
+
+program
   .command('self-update')
   .description('Download and install the latest skillz release')
   .action(async () => {
     const { selfUpdateCommand } = await import('./commands/self-update');
     await selfUpdateCommand();
   });
+
+// Passive background update check — fired once at startup for commands that
+// aren't the hot path. The result is displayed as a Clack `note` in preAction,
+// before the command's output. Respects the 24h cache in update-checker.
+const SKIP_UPDATE_CHECK = new Set([
+  'track',
+  'self-update',
+  'version',
+  '--version',
+  '-V',
+  'help',
+  '--help',
+  '-h',
+]);
+
+const updatePromise = (async () => {
+  const subPos = process.argv[1]?.endsWith('.ts') ? 2 : 1;
+  const cmd = process.argv[subPos];
+  if (!cmd || SKIP_UPDATE_CHECK.has(cmd)) return null;
+  try {
+    const { checkForUpdate } = await import('./lib/update-checker');
+    return await checkForUpdate();
+  } catch {
+    return null;
+  }
+})();
+
+program.hook('preAction', async () => {
+  const info = await updatePromise;
+  if (!info?.hasUpdate) return;
+  try {
+    const { note } = await import('@clack/prompts');
+    note(
+      `skillz ${info.latest} is available (you have ${info.current}).\nRun \`skillz self-update\` to upgrade.`,
+      'update available',
+    );
+  } catch {
+    // swallow — the check is best-effort
+  }
+});
 
 await program.parseAsync(process.argv);
