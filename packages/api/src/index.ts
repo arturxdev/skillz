@@ -1,10 +1,7 @@
 import { Hono } from 'hono';
+import authRoutes from './routes/auth';
 
-type Variables = {
-  device?: { id: string; userId: string };
-};
-
-const app = new Hono<{ Bindings: Env; Variables: Variables }>();
+const app = new Hono<{ Bindings: Env }>();
 
 app.get('/', (c) =>
   c.json({ name: 'skillz-api', version: c.env.APP_VERSION }),
@@ -13,7 +10,8 @@ app.get('/', (c) =>
 app.get('/version', (c) => c.json({ version: c.env.APP_VERSION }));
 app.on('HEAD', '/version', (c) => c.body(null, 200));
 
-// TODO(sprint-1): mount /auth routes
+app.route('/auth', authRoutes);
+
 // TODO(sprint-2): mount /skills, /installations routes
 // TODO(sprint-3): mount /track, /stats routes
 
