@@ -183,11 +183,11 @@ program
   .command('stats [skill]')
   .description('Show activations')
   .option('--last <period>', '7d | 30d | all', '30d')
-  .option('--by <dim>', 'project | device | version')
+  .option('--by <dim>', 'skill | project | device | version')
   .action(
     async (
       skill: string | undefined,
-      opts: { last: string; by?: 'project' | 'device' | 'version' },
+      opts: { last: string; by?: 'project' | 'device' | 'version' | 'skill' },
     ) => {
       const { statsCommand } = await import('./commands/stats');
       await statsCommand({ skill, last: opts.last, by: opts.by });

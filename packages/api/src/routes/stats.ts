@@ -39,6 +39,19 @@ r.get('/', requireAuth, async (c) => {
     .where(baseWhere);
   const total = totalRows[0]?.c ?? 0;
 
+  const bySkillRows = skillIdFilter
+    ? []
+    : await db
+        .select({
+          name: skills.name,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(usagePings)
+        .innerJoin(skills, eq(skills.id, usagePings.skillId))
+        .where(baseWhere)
+        .groupBy(skills.name)
+        .orderBy(sql`count(*) desc`);
+
   const byVersionRows = await db
     .select({
       version: usagePings.version,
@@ -77,6 +90,7 @@ r.get('/', requireAuth, async (c) => {
     skill: resolvedName,
     since: sinceParam,
     total,
+    by_skill: bySkillRows,
     by_version: byVersionRows,
     by_device: byDeviceRows,
     by_project: byProjectRows,

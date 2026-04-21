@@ -6,6 +6,7 @@ type StatsResp = {
   skill: string | null;
   since: string;
   total: number;
+  by_skill: Array<{ name: string; count: number }>;
   by_version: Array<{ version: number | null; count: number }>;
   by_device: Array<{ hostname: string; count: number }>;
   by_project: Array<{ project_path: string | null; count: number }>;
@@ -14,7 +15,7 @@ type StatsResp = {
 export async function statsCommand(opts: {
   skill?: string;
   last: string;
-  by?: 'project' | 'device' | 'version';
+  by?: 'project' | 'device' | 'version' | 'skill';
 }): Promise<void> {
   const cfg = requireConfig();
 
@@ -38,6 +39,14 @@ export async function statsCommand(opts: {
   }
 
   const showAll = !opts.by;
+
+  if ((showAll || opts.by === 'skill') && res.by_skill.length > 0) {
+    console.log('');
+    console.log('  By skill:');
+    for (const row of res.by_skill) {
+      console.log(`    ${row.name.padEnd(25)} ${row.count}`);
+    }
+  }
 
   if ((showAll || opts.by === 'version') && res.by_version.length > 0) {
     console.log('');
