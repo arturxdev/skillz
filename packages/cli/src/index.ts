@@ -129,12 +129,20 @@ program
 program
   .command('list')
   .alias('ls')
-  .description('List installed skills')
+  .description('List skills (installed locally, remote registry, or outdated)')
   .option('--scope <scope>', "'global', 'project', or 'all'", 'all')
-  .action(async (opts: { scope: 'global' | 'project' | 'all' }) => {
-    const { listCommand } = await import('./commands/list');
-    await listCommand({ scope: opts.scope });
-  });
+  .option('--remote', 'list skills in the cloud registry')
+  .option('--outdated', 'show installed skills with newer versions available')
+  .action(
+    async (opts: {
+      scope: 'global' | 'project' | 'all';
+      remote?: boolean;
+      outdated?: boolean;
+    }) => {
+      const { listCommand } = await import('./commands/list');
+      await listCommand(opts);
+    },
+  );
 
 program
   .command('info <skill>')
