@@ -1,7 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-export const VERSION = '0.1.4';
+export const VERSION = '0.1.5';
 
 // Resolved in this order:
 //   1. compile-time constant baked via `bun build --define` (see build.ts)
