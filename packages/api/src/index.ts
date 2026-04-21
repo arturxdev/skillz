@@ -1,5 +1,7 @@
 import { Hono } from 'hono';
 import authRoutes from './routes/auth';
+import installationsRoutes from './routes/installations';
+import skillsRoutes from './routes/skills';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -11,8 +13,9 @@ app.get('/version', (c) => c.json({ version: c.env.APP_VERSION }));
 app.on('HEAD', '/version', (c) => c.body(null, 200));
 
 app.route('/auth', authRoutes);
+app.route('/skills', skillsRoutes);
+app.route('/installations', installationsRoutes);
 
-// TODO(sprint-2): mount /skills, /installations routes
 // TODO(sprint-3): mount /track, /stats routes
 
 app.notFound((c) => c.json({ error: 'not_found' }, 404));
