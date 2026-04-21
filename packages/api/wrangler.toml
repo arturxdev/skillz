@@ -9,7 +9,7 @@ bucket_name = "skillz-blobs"
 
 [vars]
 RESEND_FROM = "skillz <onboarding@resend.dev>"
-APP_VERSION = "0.1.2"
+APP_VERSION = "0.1.3"
 
 # Secrets (set via `wrangler secret put <NAME>`):
 # - DATABASE_URL         Neon HTTP connection string

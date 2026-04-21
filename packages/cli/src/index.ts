@@ -6,14 +6,14 @@ import { VERSION } from './lib/constants';
 // update-checker, or anything non-essential. We branch before building the full
 // program to keep cold start as low as possible.
 //
-// argv layout:
-//   compiled binary:  [exe, 'track', ...rest]       → argv[1]
-//   `bun run src/`:   [bun, src, 'track', ...rest]  → argv[2]
+// Position of the subcommand in argv:
+//   compiled binary:  argv[1]            (argv[0] = exe)
+//   `bun run src/`:   argv[2]            (argv[1] = <something>.ts)
 {
-  const trackIdx = process.argv.indexOf('track');
-  if (trackIdx === 1 || trackIdx === 2) {
+  const subPos = process.argv[1]?.endsWith('.ts') ? 2 : 1;
+  if (process.argv[subPos] === 'track') {
     const { trackCommand } = await import('./commands/track');
-    await trackCommand(process.argv.slice(trackIdx + 1));
+    await trackCommand(process.argv.slice(subPos + 1));
     process.exit(0);
   }
 }
@@ -155,6 +155,14 @@ program
   });
 
 // Telemetry
+program
+  .command('track <skill>')
+  .description('Record activation (called by LLM from installed SKILL.md)')
+  .action(async (skill: string) => {
+    const { trackCommand } = await import('./commands/track');
+    await trackCommand([skill]);
+  });
+
 program
   .command('sync')
   .description('Flush offline telemetry queue')
