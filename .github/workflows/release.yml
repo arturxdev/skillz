@@ -1,0 +1,43 @@
+name: Release CLI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Build all targets
+        working-directory: packages/cli
+        env:
+          # Falls back to the default in build.ts if the repo variable isn't set.
+          SKILLZ_API_URL: ${{ vars.SKILLZ_API_URL }}
+        run: bun run build:all
+
+      - name: Generate checksums
+        working-directory: packages/cli/dist
+        run: sha256sum skillz-* > SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            packages/cli/dist/skillz-darwin-arm64
+            packages/cli/dist/skillz-darwin-x64
+            packages/cli/dist/skillz-linux-arm64
+            packages/cli/dist/skillz-linux-x64
+            packages/cli/dist/SHA256SUMS.txt
+          generate_release_notes: true

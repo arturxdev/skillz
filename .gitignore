@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Wrangler
+.wrangler/
+.dev.vars
+
+# Env
+.env
+.env.local
+
+# Bun lockfiles are committed (bun.lock / bun.lockb).
+
+# CLI build output
+packages/cli/dist/

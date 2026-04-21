@@ -1,0 +1,17 @@
+{
+  "name": "skillz",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "build:cli": "bun --filter @skillz/cli build",
+    "build:cli:all": "bun --filter @skillz/cli build:all",
+    "dev:api": "bun run sync:dev-vars && bun --filter @skillz/api dev",
+    "deploy:api": "bun --filter @skillz/api deploy",
+    "db:generate": "bun --filter @skillz/api db:generate",
+    "db:migrate": "bun --filter @skillz/api db:migrate",
+    "sync:dev-vars": "bun run scripts/sync-dev-vars.ts",
+    "sync:worker-secrets": "bun run scripts/sync-worker-secrets.ts",
+    "typecheck": "bun --filter '*' typecheck"
+  }
+}

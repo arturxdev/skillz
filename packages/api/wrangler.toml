@@ -1,0 +1,17 @@
+name = "skillz-api"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "skillz-blobs"
+
+[vars]
+RESEND_FROM = "skillz <onboarding@resend.dev>"
+APP_VERSION = "0.1.0"
+
+# Secrets (set via `wrangler secret put <NAME>`):
+# - DATABASE_URL         Neon HTTP connection string
+# - RESEND_API_KEY       Resend API key
+# - TOKEN_SIGNING_SECRET optional, openssl rand -hex 32
