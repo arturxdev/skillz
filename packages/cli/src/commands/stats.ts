@@ -13,15 +13,15 @@ export async function statsCommand(): Promise<void> {
 
   console.log('Skills');
   console.log('──────');
-  console.log(`  Total activations:  ${res.total}`);
 
-  if (res.total === 0) {
-    console.log('\n  (no activations yet)');
+  if (res.by_skill.length === 0) {
+    console.log('  (no executions yet)');
     return;
   }
 
-  console.log('');
   for (const row of res.by_skill) {
     console.log(`  ${row.name.padEnd(25)} ${row.count}`);
   }
+  console.log(`  ${'─'.repeat(27)}`);
+  console.log(`  ${'Total'.padEnd(25)} ${res.total}`);
 }
