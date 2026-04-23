@@ -1,7 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 
-export const VERSION = '0.1.6';
+export const VERSION = '1.0.8';
 
 // Resolved in this order:
 //   1. compile-time constant baked via `bun build --define` (see build.ts)
@@ -19,8 +19,11 @@ export const UPDATE_CHECK_PATH = join(CONFIG_DIR, 'update-check.json');
 export const BIN_DIR = join(homedir(), '.skillz', 'bin');
 export const BIN_PATH = join(BIN_DIR, 'skillz');
 
-export const GLOBAL_SKILLS_DIR = join(homedir(), '.claude', 'skills');
-export const PROJECT_SKILLS_DIR = '.claude/skills';
+export const GLOBAL_AGENTS_SKILLS_DIR = join(homedir(), '.agents', 'skills');
+export const PROJECT_AGENTS_SKILLS_DIR = '.agents/skills';
+
+export const GLOBAL_CLAUDE_SKILLS_DIR = join(homedir(), '.claude', 'skills');
+export const PROJECT_CLAUDE_SKILLS_DIR = '.claude/skills';
 
 export const TELEMETRY_START = '<!-- skillz-telemetry-start -->';
 export const TELEMETRY_END = '<!-- skillz-telemetry-end -->';

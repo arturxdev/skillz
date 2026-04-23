@@ -3,8 +3,15 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { ApiError, apiFetch } from '../lib/api-client';
 import { requireConfig } from '../lib/config';
-import { API_BASE_URL, GLOBAL_SKILLS_DIR, PROJECT_SKILLS_DIR } from '../lib/constants';
+import {
+  API_BASE_URL,
+  GLOBAL_AGENTS_SKILLS_DIR,
+  GLOBAL_CLAUDE_SKILLS_DIR,
+  PROJECT_AGENTS_SKILLS_DIR,
+  PROJECT_CLAUDE_SKILLS_DIR,
+} from '../lib/constants';
 import { getLocalDb } from '../lib/local-db';
+import { assertCanLinkSkill, ensureSkillSymlink } from '../lib/symlink';
 import { computeSha256, extractTarball } from '../lib/tarball';
 import { injectTelemetry } from '../lib/telemetry-injector';
 import { requireTTY } from '../lib/tty';
@@ -88,8 +95,15 @@ export async function installCommand(opts: {
     const s = await select({
       message: 'Scope:',
       options: [
-        { value: 'project', label: 'Project (.claude/skills/)', hint: 'recommended' },
-        { value: 'global', label: 'Global (~/.claude/skills/)' },
+        {
+          value: 'project',
+          label: 'Project (./.agents/skills/ + .claude/ symlink)',
+          hint: 'recommended',
+        },
+        {
+          value: 'global',
+          label: 'Global (~/.agents/skills/ + ~/.claude/ symlink)',
+        },
       ],
     });
     if (isCancel(s)) {
@@ -100,8 +114,16 @@ export async function installCommand(opts: {
   }
 
   const cwd = process.cwd();
-  const baseDir = scope === 'global' ? GLOBAL_SKILLS_DIR : resolve(cwd, PROJECT_SKILLS_DIR);
+  const baseDir =
+    scope === 'global'
+      ? GLOBAL_AGENTS_SKILLS_DIR
+      : resolve(cwd, PROJECT_AGENTS_SKILLS_DIR);
+  const claudeLinkParent =
+    scope === 'global'
+      ? GLOBAL_CLAUDE_SKILLS_DIR
+      : resolve(cwd, PROJECT_CLAUDE_SKILLS_DIR);
   mkdirSync(baseDir, { recursive: true });
+  mkdirSync(claudeLinkParent, { recursive: true });
 
   let succeeded = 0;
   for (const { name, version } of requests) {
@@ -128,13 +150,19 @@ export async function installCommand(opts: {
       }
 
       const installDir = join(baseDir, meta.name);
+      const claudeLinkPath = join(claudeLinkParent, meta.name);
+
       if (existsSync(installDir) && !opts.force) {
         s.stop(`${name} already installed at ${installDir} — pass --force to reinstall`);
         continue;
       }
+
+      assertCanLinkSkill(installDir, claudeLinkPath, opts.force ?? false);
+
       mkdirSync(installDir, { recursive: true });
       await extractTarball(buf, installDir);
       injectTelemetry(installDir, meta.name);
+      ensureSkillSymlink(installDir, claudeLinkPath, opts.force ?? false);
 
       const inst = await apiFetch<InstallationsResp>('/installations', {
         method: 'POST',
@@ -171,5 +199,7 @@ export async function installCommand(opts: {
     }
   }
 
-  outro(`${succeeded}/${requests.length} installed in scope=${scope}`);
+  outro(
+    `${succeeded}/${requests.length} installed to .agents/skills/ (linked to .claude/ for Claude Code) in scope=${scope}`,
+  );
 }

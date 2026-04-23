@@ -3,6 +3,7 @@ import { existsSync, rmSync } from 'node:fs';
 import { apiFetch } from '../lib/api-client';
 import { requireConfig } from '../lib/config';
 import { getLocalDb, type InstalledRow } from '../lib/local-db';
+import { removeSkillSymlinkIfOurs } from '../lib/symlink';
 import { removeTelemetry } from '../lib/telemetry-injector';
 import { requireTTY } from '../lib/tty';
 
@@ -68,6 +69,15 @@ export async function removeCommand(opts: {
 
   try {
     removeTelemetry(target.install_path);
+
+    const claudeLinkPath = target.install_path.replace(
+      /\/\.agents\/skills\//,
+      '/.claude/skills/',
+    );
+    if (claudeLinkPath !== target.install_path) {
+      removeSkillSymlinkIfOurs(target.install_path, claudeLinkPath);
+    }
+
     if (existsSync(target.install_path)) {
       rmSync(target.install_path, { recursive: true, force: true });
     }
