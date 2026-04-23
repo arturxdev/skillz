@@ -1,10 +1,9 @@
-import { and, eq, gt, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { getDb } from '../db/client';
 import { skills, usagePings } from '../db/schema';
 import { requireAuth, type AuthedContext } from '../middleware/auth';
 
-const DEDUPE_WINDOW_MS = 5 * 60 * 1000;
 const MAX_BATCH = 500;
 
 const r = new Hono<AuthedContext>();
@@ -28,18 +27,6 @@ r.post('/', requireAuth, async (c) => {
   const skill = await db.query.skills.findFirst({ where: eq(skills.id, body.skill_id) });
   if (!skill || skill.userId !== device.userId) {
     return c.json({ error: 'not_found' }, 404);
-  }
-
-  const since = new Date(Date.now() - DEDUPE_WINDOW_MS);
-  const existing = await db.query.usagePings.findFirst({
-    where: and(
-      eq(usagePings.skillId, body.skill_id),
-      eq(usagePings.deviceId, device.id),
-      gt(usagePings.pingedAt, since),
-    ),
-  });
-  if (existing) {
-    return c.json({ ok: true, deduped: true });
   }
 
   await db.insert(usagePings).values({
